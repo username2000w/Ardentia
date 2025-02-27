@@ -11,6 +11,7 @@ fn main() {
         println!("==============================================\n");
     
         println!("Welcome adventurer!");
+        println!("ARDENTIA - A Dungeon Crawler Game");
     
         println!("1. New Game");
         println!("2. Load Game (WIP) 🤡🤡🤡"); 
