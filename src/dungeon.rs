@@ -24,10 +24,14 @@ impl Dungeon {
         println!("You enter the level {} Dongeon.", self.level);
         for room in self.rooms.iter_mut() {
             match room.enter(player) {
-                RoomResult::Sucess => println!("You win!"),
-                RoomResult::Died => println!("You died!"),
+                RoomResult::Sucess => println!("You killed every monster of this room..."),
+                RoomResult::Died => {
+                    println!("You died!");
+                    break;
+                },
                 RoomResult::Ran => println!("You ran away!"),
             }
+            print!("uwuwuuwuwuwuwuw")
         }
     }
 }

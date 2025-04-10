@@ -53,13 +53,14 @@ impl Weapon {
             WeaponType::Axe => 15,
         };
 
-        attack_value += match weapon_prefix {
+        
+        attack_value = match weapon_prefix {
             "Broken" => attack_value / 2,
-            "Rusty" => -2,
-            "Sharp" => 2,
-            _ => 0,
+            "Rusty" => attack_value - 2,
+            "Sharp" => attack_value + 2,
+            _ => attack_value,
         };
-
+        
         Weapon {
             name,
             weapon_type,

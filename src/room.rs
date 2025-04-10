@@ -36,6 +36,31 @@ pub enum RoomResult {
 }
 
 impl Room {
+    pub fn display(&self) {
+        println!("============================");
+        println!("📍 Room : {}", self.name);
+        println!("============================\n");
+        println!("{}", self.description);
+        println!("\n🔹 Difficulty : {}\n", self.difficulty);
+
+        println!("👹 Monsters :");
+        if self.monsters.is_empty() {
+            println!("  - No monsters here.");
+        } else {
+            for monster in &self.monsters {
+                println!("  - {} (Level {})", monster.name, monster.level);
+            }
+        }
+
+        println!("\n💰 Treasure :");
+        match &self.treasure {
+            Some(t) => println!("  - Treasure: {} golds", t.gold), // println!("  - {} (Valeur: {} pièces d'or)", t.description, t.value),
+            None => println!("  - Aucun trésor ici."),
+        }
+
+        println!("\n============================\n");
+    }
+
     pub fn new(name: String, description: String, threat: i32) -> Room {
         let mut actual_threat = threat;
         let mut monsters: Vec<Monster> = Vec::new();
@@ -59,8 +84,6 @@ impl Room {
             _ => Difficulty::Easy,
         };
 
-        print!("Difficulty: {}\n", difficulty);
-
         Room {
             name,
             description,
@@ -71,7 +94,18 @@ impl Room {
     }
 
     pub fn enter(&mut self, player: &mut Player) -> RoomResult {
-        println!("You enter the {} {}.\n{}\n", self.name, self.difficulty, self.description);
+        println!("You enter a room.\n");
+
+        self.display();
+
+        println!("Continue...");
+
+        let mut input = String::new();
+        io::stdin()
+            .read_line(&mut input)
+            .expect("error: unable to read user input");
+
+        print!("\x1bc\x1b[1;1H"); // clear screen
 
         for monster in self.monsters.iter_mut() {
             println!("A level {} {} appears!\n", monster.level, monster.name);
@@ -79,10 +113,10 @@ impl Room {
             while monster.is_alive() {
                 display_fight_screen(player, monster);
 
-                if player.speed > monster.speed {
-                    let action = player.select_action();
+                let action = player.select_action();
 
-                    print!("\x1bc\x1b[1;1H"); // clear screen
+                print!("\x1bc\x1b[1;1H"); // clear screen
+                if player.speed > monster.speed {
 
                     match action {
                         Action::Attack => {
@@ -96,10 +130,6 @@ impl Room {
                     }
                 } else {
                     monster.attack(player);
-
-                    let action = player.select_action();
-
-                    print!("\x1bc\x1b[1;1H"); // clear screen
 
                     match action {
                         Action::Attack => {
@@ -146,6 +176,7 @@ impl Room {
 }
 
 struct Treasure {
+    gold: i32,
     weapon: Option<Weapon>,
     health_potion: Option<HealthPotion>,
 }
@@ -153,6 +184,7 @@ struct Treasure {
 impl Treasure {
     fn new() -> Treasure {
         Treasure {
+            gold: rand::rng().random_range(10..50),
             weapon: Some(Weapon::new(WeaponType::Sword)),
             // armor: None,
             health_potion: None,
