@@ -54,8 +54,14 @@ impl Room {
 
         println!("\n💰 Treasure :");
         match &self.treasure {
-            Some(t) => println!("  - Treasure: {} golds", t.gold), // println!("  - {} (Valeur: {} pièces d'or)", t.description, t.value),
-            None => println!("  - Aucun trésor ici."),
+            Some(t) => {
+                match &t.weapon {
+                    Some(w) => println!("  - A {} weapon", w.rarity),
+                    None => println!("")
+                }
+                println!("  - Treasure: {} golds", t.gold)
+            },
+            None => println!("  - Aucun trésor ici.")
         }
 
         println!("\n============================\n");
@@ -150,8 +156,8 @@ impl Room {
         if let Some(treasure) = self.treasure.take() {
             if let Some(weapon) = treasure.weapon {
                 println!("You found a weapon!"); //, treasure.weapon.as_ref().unwrap().name);
-                println!("Your weapon attack: {} -> New weapon attack: {}", player.weapon.as_ref().unwrap_or(&Weapon::empty()).attack_value, weapon.attack_value);
-                println!("Do you want to equip it? (y/n) (default: n)");
+                println!("Your attack: {} -> New attack: {}", player.attack + player.weapon.as_ref().unwrap_or(&Weapon::empty()).attack_value, player.attack + weapon.attack_value);
+                println!("Do you want to equip it? (y/N)");
 
                 let mut input = String::new();
                 io::stdin()
@@ -159,7 +165,7 @@ impl Room {
                     .expect("error: unable to read user input");
 
                 match input.trim() {
-                    "y" => player.weapon = Some(weapon),
+                    "y" => player.equip(weapon),
                     _ => println!("You decide not to equip the weapon."),
                 }
             }
@@ -210,8 +216,8 @@ fn display_fight_screen(player: &Player, monster: &Monster) {
         player.health, monster.health
     );
     println!(
-        " Attack: {} (+{})\t\t Attack: {}",
-        player.attack, player.weapon.as_ref().unwrap_or(&Weapon::empty()).attack_value, monster.attack
+        " Attack: {}\t\t\t Attack: {}",
+        player.attack + player.weapon.as_ref().unwrap_or(&Weapon::empty()).attack_value, monster.attack
     );
     println!(
         " Defense: {}\t\t\t Defense: {}",

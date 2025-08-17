@@ -21,6 +21,7 @@ pub struct Weapon {
     pub name: String,
     pub weapon_type: WeaponType,
     pub attack_value: i32,
+    pub rarity: Rarity,
 }
 
 pub enum WeaponType {
@@ -29,12 +30,32 @@ pub enum WeaponType {
     Axe,
 }
 
+pub enum Rarity {
+    Common,
+    Rare,
+    Epic,
+    Legendary,
+    Mythical,
+}
+
 impl fmt::Display for WeaponType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             WeaponType::Sword => write!(f, "Sword"),
             WeaponType::Dagger => write!(f, "Dagger"),
             WeaponType::Axe => write!(f, "Axe"),
+        }
+    }
+}
+
+impl fmt::Display for Rarity {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Rarity::Common => write!(f, "common"),
+            Rarity::Rare => write!(f, "rare"),
+            Rarity::Epic => write!(f, "epic"),
+            Rarity::Legendary => write!(f, "legendary"),
+            Rarity::Mythical => write!(f, "mythical"),
         }
     }
 }
@@ -60,11 +81,14 @@ impl Weapon {
             "Sharp" => attack_value + 2,
             _ => attack_value,
         };
+
+        let rarity = Rarity::Common;
         
         Weapon {
             name,
             weapon_type,
             attack_value,
+            rarity,
         }
     }
 
@@ -73,6 +97,7 @@ impl Weapon {
             name: String::from(""),
             weapon_type: WeaponType::Sword,
             attack_value: 0,
+            rarity: Rarity::Common,
         }
     }
 }
@@ -133,6 +158,10 @@ impl Player {
 
     pub fn is_dead(&self) -> bool {
         self.health <= 0
+    }
+
+    pub fn equip(&mut self, weapon: Weapon) {
+        self.weapon = Some(weapon);
     }
 }
 

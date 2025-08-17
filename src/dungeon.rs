@@ -31,7 +31,6 @@ impl Dungeon {
                 },
                 RoomResult::Ran => println!("You ran away!"),
             }
-            print!("uwuwuuwuwuwuwuw")
         }
     }
 }
