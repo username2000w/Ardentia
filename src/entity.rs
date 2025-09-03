@@ -180,7 +180,7 @@ impl fmt::Display for Player {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Monster {
 	pub name: String,
 	pub level: i32,

@@ -1,4 +1,4 @@
-use std::{fmt::format, ops::Index};
+use std::ops::Index;
 
 use ratatui::{
 	layout::{Constraint, Flex, Layout},
@@ -83,7 +83,7 @@ impl Screen {
 	pub fn room(frame: &mut Frame, app: &App) {
 		let room = app.dungeon.rooms.index(app.current_room);
 		let monster_number = (room.monsters.len() + 1) as u16;
-		let treasure_number = (room.treasure.rewards.len() + 1) as u16;
+		let treasure_number = (room.treasure.len() + 1) as u16;
 		let areas = Layout::vertical([
 			Constraint::Length(3),
 			Constraint::Length(4),
@@ -108,19 +108,14 @@ impl Screen {
 			difficulty_area,
 		);
 
-		let monster_list: Line;
+		let mut monster_list = Line::default();
 
 		if !room.monsters.is_empty() {
 			monster_list.push_span("Monsters :");
 
-			for monster in room.monsters {
+			for monster in room.monsters.clone() {
 				monster_list.push_span(format!("{}", monster.name));
 			}
 		}
-		let difficulty = Line::from(difficulty_text.red().bold()).centered();
-		frame.render_widget(
-			Paragraph::new(difficulty).block(Block::bordered()),
-			difficulty_area,
-		);
 	}
 }

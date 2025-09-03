@@ -201,7 +201,7 @@ impl Room {
 }
 
 #[derive(Debug, Clone)]
-struct Treasure {
+pub struct Treasure {
 	pub weapon: Option<Weapon>,
 	pub gold: Option<u32>,
 	pub health_potion: Option<HealthPotion>,
