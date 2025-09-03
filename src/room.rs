@@ -60,7 +60,7 @@ impl Room {
 			Some(t) => {
 				match &t.weapon {
 					Some(w) => println!("  - A {} weapon", w.rarity),
-					None => println!(""),
+					None => println!(),
 				}
 				println!("  - Treasure: {} golds", t.gold);
 			}
@@ -120,7 +120,7 @@ impl Room {
 
 		print!("\x1bc\x1b[1;1H"); // clear screen
 
-		for monster in self.monsters.iter_mut() {
+		for monster in &mut self.monsters {
 			println!("A level {} {} appears!\n", monster.level, monster.name);
 
 			while monster.is_alive() {
