@@ -22,7 +22,7 @@ pub enum Action {
 	Run,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Weapon {
 	pub name: String,
 	pub weapon_type: WeaponType,
@@ -30,14 +30,14 @@ pub struct Weapon {
 	pub rarity: Rarity,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum WeaponType {
 	Sword,
 	Dagger,
 	Axe,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Rarity {
 	Common,
 	Rare,

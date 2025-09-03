@@ -5,7 +5,7 @@ use crate::{
 
 #[derive(Debug, Default)]
 pub struct Dungeon {
-	rooms: Vec<Room>,
+	pub rooms: Vec<Room>,
 	pub level: i32,
 }
 

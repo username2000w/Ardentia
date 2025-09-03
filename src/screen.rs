@@ -1,4 +1,4 @@
-use std::fmt::format;
+use std::{fmt::format, ops::Index};
 
 use ratatui::{
 	layout::{Constraint, Flex, Layout},
@@ -15,6 +15,8 @@ pub enum Screen {
 	#[default]
 	MainMenu,
 	DungeonLoading,
+	RoomLoading,
+	Room,
 	RoomResult,
 	Combat,
 }
@@ -68,5 +70,57 @@ impl Screen {
 		let text = format!("You enter the level {} Dongeon.", app.dungeon.level);
 
 		frame.render_widget(Line::from(text.red()).centered(), text_area);
+	}
+
+	pub fn room_loading(frame: &mut Frame) {
+		let [text_area] = Layout::vertical([Constraint::Length(1)])
+			.flex(Flex::Center)
+			.areas(frame.area());
+
+		frame.render_widget(Line::from("You enter a room.".red()).centered(), text_area);
+	}
+
+	pub fn room(frame: &mut Frame, app: &App) {
+		let room = app.dungeon.rooms.index(app.current_room);
+		let monster_number = (room.monsters.len() + 1) as u16;
+		let treasure_number = (room.treasure.rewards.len() + 1) as u16;
+		let areas = Layout::vertical([
+			Constraint::Length(3),
+			Constraint::Length(4),
+			Constraint::Length(1),
+			Constraint::Length(1),
+			Constraint::Length(monster_number),
+			Constraint::Length(treasure_number),
+		]);
+
+		let [title_area, _, description_area, difficulty_area, monsters_area, treasure_area] =
+			areas.areas(frame.area());
+
+		let title_text = format!("Room : {}", room.name);
+		let title = Line::from(title_text.red().bold()).centered();
+
+		frame.render_widget(Paragraph::new(title).block(Block::bordered()), title_area);
+
+		let difficulty_text = format!("Room : {}", room.name);
+		let difficulty = Line::from(difficulty_text.red().bold()).centered();
+		frame.render_widget(
+			Paragraph::new(difficulty).block(Block::bordered()),
+			difficulty_area,
+		);
+
+		let monster_list: Line;
+
+		if !room.monsters.is_empty() {
+			monster_list.push_span("Monsters :");
+
+			for monster in room.monsters {
+				monster_list.push_span(format!("{}", monster.name));
+			}
+		}
+		let difficulty = Line::from(difficulty_text.red().bold()).centered();
+		frame.render_widget(
+			Paragraph::new(difficulty).block(Block::bordered()),
+			difficulty_area,
+		);
 	}
 }

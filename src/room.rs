@@ -7,11 +7,11 @@ use crate::entity::{Action, Monster, Player, Weapon, WeaponType};
 
 #[derive(Debug)]
 pub struct Room {
-	name: String,
-	description: String,
-	difficulty: Difficulty,
-	monsters: Vec<Monster>,
-	treasure: Option<Treasure>,
+	pub name: String,
+	pub description: String,
+	pub difficulty: Difficulty,
+	pub monsters: Vec<Monster>,
+	pub treasure: Vec<Treasure>,
 }
 
 #[derive(Debug)]
@@ -39,36 +39,36 @@ pub enum RoomResult {
 }
 
 impl Room {
-	pub fn display(&self) {
-		println!("============================");
-		println!("📍 Room : {}", self.name);
-		println!("============================\n");
-		println!("{}", self.description);
-		println!("\n🔹 Difficulty : {}\n", self.difficulty);
+	// pub fn display(&self) {
+	// 	println!("============================");
+	// 	println!("📍 Room : {}", self.name);
+	// 	println!("============================\n");
+	// 	println!("{}", self.description);
+	// 	println!("\n🔹 Difficulty : {}\n", self.difficulty);
 
-		println!("👹 Monsters :");
-		if self.monsters.is_empty() {
-			println!("  - No monsters here.");
-		} else {
-			for monster in &self.monsters {
-				println!("  - {} (Level {})", monster.name, monster.level);
-			}
-		}
+	// 	println!("👹 Monsters :");
+	// 	if self.monsters.is_empty() {
+	// 		println!("  - No monsters here.");
+	// 	} else {
+	// 		for monster in &self.monsters {
+	// 			println!("  - {} (Level {})", monster.name, monster.level);
+	// 		}
+	// 	}
 
-		println!("\n💰 Treasure :");
-		match &self.treasure {
-			Some(t) => {
-				match &t.weapon {
-					Some(w) => println!("  - A {} weapon", w.rarity),
-					None => println!(),
-				}
-				println!("  - Treasure: {} golds", t.gold);
-			}
-			None => println!("  - Aucun trésor ici."),
-		}
+	// 	println!("\n💰 Treasure :");
+	// 	match &self.treasure {
+	// 		Some(t) => {
+	// 			match &t.weapon {
+	// 				Some(w) => println!("  - A {} weapon", w.rarity),
+	// 				None => println!(),
+	// 			}
+	// 			println!("  - Treasure: {} golds", t.gold);
+	// 		}
+	// 		None => println!("  - Aucun trésor ici."),
+	// 	}
 
-		println!("\n============================\n");
-	}
+	// 	println!("\n============================\n");
+	// }
 
 	#[must_use]
 	pub fn new(name: String, description: String, threat: i32) -> Self {
@@ -102,14 +102,14 @@ impl Room {
 			description,
 			difficulty,
 			monsters,
-			treasure: Some(Treasure::new()),
+			treasure: vec![],
 		}
 	}
 
 	pub fn enter(&mut self, player: &mut Player) -> RoomResult {
 		println!("You enter a room.\n");
 
-		self.display();
+		// self.display();
 
 		println!("Continue...");
 
@@ -159,8 +159,8 @@ impl Room {
 			println!("You killed the {}!", monster.name);
 		}
 
-		if let Some(treasure) = self.treasure.take() {
-			if let Some(weapon) = treasure.weapon {
+		for reward in self.treasure.clone() {
+			if let Some(weapon) = reward.weapon {
 				println!("You found a weapon!"); //, treasure.weapon.as_ref().unwrap().name);
 				println!(
 					"Your attack: {} -> New attack: {}",
@@ -185,7 +185,7 @@ impl Room {
 				}
 			}
 
-			if let Some(health_potion) = treasure.health_potion {
+			if let Some(health_potion) = reward.health_potion {
 				println!("You found a health potion!");
 				println!(
 					"Your health: {} -> New health: {}",
@@ -200,25 +200,34 @@ impl Room {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Treasure {
-	gold: i32,
-	weapon: Option<Weapon>,
-	health_potion: Option<HealthPotion>,
+	pub weapon: Option<Weapon>,
+	pub gold: Option<u32>,
+	pub health_potion: Option<HealthPotion>,
 }
 
 impl Treasure {
-	fn new() -> Self {
+	fn new(weapon: Option<Weapon>, gold: Option<u32>, health_potion: Option<HealthPotion>) -> Self {
 		Self {
-			gold: rand::rng().random_range(10..50),
+			weapon,
+			gold,
+			health_potion,
+		}
+	}
+}
+
+impl Default for Treasure {
+	fn default() -> Self {
+		Self {
 			weapon: Some(Weapon::new(WeaponType::Sword)),
-			// armor: None,
+			gold: Some(rand::rng().random_range(10..50)),
 			health_potion: None,
 		}
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct HealthPotion {
 	heal_amount: i32,
 }

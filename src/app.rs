@@ -14,19 +14,24 @@ pub struct App {
 	pub current_main_menu_option: MainMenuOption,
 	pub dungeon: Dungeon,
 	pub player: Player,
+	pub current_room: usize,
 }
 
 impl App {
 	pub fn run(&mut self, mut terminal: DefaultTerminal) -> Result<()> {
 		loop {
 			terminal.draw(|frame| self.draw(frame))?;
+			if self.current_screen == Screen::RoomLoading {
+				sleep(Duration::from_secs(2));
+				self.switch_screen(Screen::Room);
+			}
 			if self.current_screen == Screen::DungeonLoading {
 				sleep(Duration::from_secs(2));
-				self.switch_screen(Screen::Combat);
+				self.switch_screen(Screen::RoomLoading);
 			}
 
 			if let Event::Key(key) = event::read()? {
-				if key.kind == KeyEventKind::Press {
+				if key.kind == KeyEventKind::Press && self.current_screen == Screen::MainMenu {
 					match key.code {
 						KeyCode::Up => self.option_up(),
 						KeyCode::Down => self.option_down(),
@@ -51,8 +56,10 @@ impl App {
 		match self.current_screen {
 			Screen::MainMenu => Screen::main_menu(frame, self),
 			Screen::DungeonLoading => Screen::dungeon_loading(frame, self),
+			Screen::RoomLoading => Screen::room_loading(frame),
 			Screen::RoomResult => todo!(),
 			Screen::Combat => todo!(),
+			Screen::Room => Screen::room(frame, self),
 		}
 	}
 
