@@ -1,41 +1,50 @@
-use std::{io, process::exit};
+use color_eyre::{eyre::Ok, Result};
+use project_x::app::App;
 
-use project_x::{dungeon::Dungeon, entity::Player};
+fn main() -> Result<()> {
+	color_eyre::install()?;
+	let terminal = ratatui::init();
+	let mut app = App::default();
 
-fn main() {
-	loop {
-		print!("\x1bc\x1b[1;1H");
+	app.run(terminal)?;
 
-		println!("==============================================");
-		println!(" *--*-            PROJECT X            *-*--* ");
-		println!("==============================================\n");
+	ratatui::restore();
 
-		println!("Welcome adventurer!");
-		println!("ARDENTIA - A Dungeon Crawler Game");
+	Ok(())
 
-		println!("1. New Game");
-		println!("2. Load Game (WIP) 🤡🤡🤡");
-		println!("3. Exit\n");
+	// loop {
+	// 	print!("\x1bc\x1b[1;1H");
 
-		let mut input = String::new();
+	// 	println!("==============================================");
+	// 	println!(" *--*-            PROJECT X            *-*--* ");
+	// 	println!("==============================================\n");
 
-		io::stdin()
-			.read_line(&mut input)
-			.expect("error: unable to read user input");
+	// 	println!("Welcome adventurer!");
+	// 	println!("ARDENTIA - A Dungeon Crawler Game");
 
-		match input.trim() {
-			"1" => {
-				print!("\x1bc\x1b[1;1H");
-				let mut player = Player::new(String::from("You"));
-				let mut dungeon = Dungeon::new(1, 3);
-				dungeon.enter(&mut player);
-			}
-			"2" => println!("Load Game!"),
-			"3" => {
-				print!("\x1bc\x1b[1;1H");
-				exit(0);
-			}
-			_ => println!("Invalid input!"),
-		}
-	}
+	// 	println!("1. New Game");
+	// 	println!("2. Load Game (WIP) 🤡🤡🤡");
+	// 	println!("3. Exit\n");
+
+	// 	let mut input = String::new();
+
+	// 	io::stdin()
+	// 		.read_line(&mut input)
+	// 		.expect("error: unable to read user input");
+
+	// 	match input.trim() {
+	// 		"1" => {
+	// 			print!("\x1bc\x1b[1;1H");
+	// 			let mut player = Player::new(String::from("You"));
+	// 			let mut dungeon = Dungeon::new(1, 3);
+	// 			dungeon.enter(&mut player);
+	// 		}
+	// 		"2" => println!("Load Game!"),
+	// 		"3" => {
+	// 			print!("\x1bc\x1b[1;1H");
+	// 			exit(0);
+	// 		}
+	// 		_ => println!("Invalid input!"),
+	// 	}
+	// }
 }

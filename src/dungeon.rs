@@ -3,10 +3,10 @@ use crate::{
 	room::{Room, RoomResult},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Dungeon {
 	rooms: Vec<Room>,
-	level: i32,
+	pub level: i32,
 }
 
 impl Dungeon {

@@ -1,11 +1,11 @@
 use std::{
-	fmt,
+	fmt::{self},
 	io::{self, Error},
 };
 
 use rand::Rng;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Player {
 	pub name: String,
 	pub health: i32,
@@ -113,9 +113,9 @@ impl Weapon {
 
 impl Player {
 	#[must_use]
-	pub const fn new(name: String) -> Self {
+	pub fn new<S: Into<String>>(name: S) -> Self {
 		Self {
-			name,
+			name: name.into(),
 			health: 100,
 			attack: 10,
 			defense: 5,
