@@ -1,3 +1,3 @@
 pub mod dungeon;
-pub mod room;
 pub mod entity;
+pub mod room;
