@@ -11,11 +11,34 @@ pub struct Room {
 	pub description: String,
 	pub difficulty: Difficulty,
 	pub monsters: Vec<Monster>,
-	pub treasure: Vec<Treasure>,
+	pub treasures: Vec<Treasure>,
+}
+
+pub trait TreasureUtils {
+	fn treasure_len(&self) -> u16;
+}
+
+impl TreasureUtils for Vec<Treasure> {
+	fn treasure_len(&self) -> u16 {
+		let mut res = 0;
+
+		for treasure in self {
+			if treasure.weapon.is_some() {
+				res += 1;
+			}
+			if treasure.gold.is_some() {
+				res += 1;
+			}
+			if treasure.health_potion.is_some() {
+				res += 1;
+			}
+		}
+		res
+	}
 }
 
 #[derive(Debug)]
-enum Difficulty {
+pub enum Difficulty {
 	Easy,
 	Medium,
 	Hard,
@@ -97,12 +120,18 @@ impl Room {
 			_ => Difficulty::Easy,
 		};
 
+		let treasures = vec![Treasure::new(
+			Some(Weapon::new(WeaponType::Sword)),
+			Some(rand::random_range(0..50)),
+			None,
+		)];
+
 		Self {
 			name,
 			description,
 			difficulty,
 			monsters,
-			treasure: vec![],
+			treasures,
 		}
 	}
 
@@ -159,7 +188,7 @@ impl Room {
 			println!("You killed the {}!", monster.name);
 		}
 
-		for reward in self.treasure.clone() {
+		for reward in self.treasures.clone() {
 			if let Some(weapon) = reward.weapon {
 				println!("You found a weapon!"); //, treasure.weapon.as_ref().unwrap().name);
 				println!(
