@@ -1,9 +1,8 @@
 use core::fmt;
-use std::io;
 
 use rand::Rng;
 
-use crate::entity::{Action, Monster, Player, Weapon, WeaponType};
+use crate::entity::{Monster, Weapon, WeaponType};
 
 #[derive(Debug)]
 pub struct Room {
@@ -12,6 +11,7 @@ pub struct Room {
 	pub difficulty: Difficulty,
 	pub monsters: Vec<Monster>,
 	pub treasures: Vec<Treasure>,
+	pub current_monster: usize,
 }
 
 pub trait TreasureUtils {
@@ -23,13 +23,10 @@ impl TreasureUtils for Vec<Treasure> {
 		let mut res = 0;
 
 		for treasure in self {
-			if treasure.weapon.is_some() {
-				res += 1;
-			}
-			if treasure.gold.is_some() {
-				res += 1;
-			}
-			if treasure.health_potion.is_some() {
+			if treasure.weapon.is_some()
+				|| treasure.gold.is_some()
+				|| treasure.health_potion.is_some()
+			{
 				res += 1;
 			}
 		}
@@ -62,37 +59,6 @@ pub enum RoomResult {
 }
 
 impl Room {
-	// pub fn display(&self) {
-	// 	println!("============================");
-	// 	println!("📍 Room : {}", self.name);
-	// 	println!("============================\n");
-	// 	println!("{}", self.description);
-	// 	println!("\n🔹 Difficulty : {}\n", self.difficulty);
-
-	// 	println!("👹 Monsters :");
-	// 	if self.monsters.is_empty() {
-	// 		println!("  - No monsters here.");
-	// 	} else {
-	// 		for monster in &self.monsters {
-	// 			println!("  - {} (Level {})", monster.name, monster.level);
-	// 		}
-	// 	}
-
-	// 	println!("\n💰 Treasure :");
-	// 	match &self.treasure {
-	// 		Some(t) => {
-	// 			match &t.weapon {
-	// 				Some(w) => println!("  - A {} weapon", w.rarity),
-	// 				None => println!(),
-	// 			}
-	// 			println!("  - Treasure: {} golds", t.gold);
-	// 		}
-	// 		None => println!("  - Aucun trésor ici."),
-	// 	}
-
-	// 	println!("\n============================\n");
-	// }
-
 	#[must_use]
 	pub fn new(name: String, description: String, threat: i32) -> Self {
 		let mut actual_threat = threat;
@@ -132,100 +98,17 @@ impl Room {
 			difficulty,
 			monsters,
 			treasures,
+			current_monster: 0,
 		}
 	}
 
-	pub fn enter(&mut self, player: &mut Player) -> RoomResult {
-		println!("You enter a room.\n");
-
-		// self.display();
-
-		println!("Continue...");
-
-		let mut input = String::new();
-		io::stdin()
-			.read_line(&mut input)
-			.expect("error: unable to read user input");
-
-		print!("\x1bc\x1b[1;1H"); // clear screen
-
-		for monster in &mut self.monsters {
-			println!("A level {} {} appears!\n", monster.level, monster.name);
-
-			while monster.is_alive() {
-				display_fight_screen(player, monster);
-
-				let action = player.select_action();
-
-				print!("\x1bc\x1b[1;1H"); // clear screen
-				if player.speed > monster.speed {
-					match action {
-						Action::Attack => {
-							player.attack(monster);
-						}
-						Action::Run => return RoomResult::Ran,
-					}
-
-					if monster.is_alive() {
-						monster.attack(player);
-					}
-				} else {
-					monster.attack(player);
-
-					match action {
-						Action::Attack => {
-							player.attack(monster);
-						}
-						Action::Run => return RoomResult::Ran,
-					}
-				}
-
-				if player.is_dead() {
-					return RoomResult::Died;
-				}
-			}
-
-			println!("You killed the {}!", monster.name);
+	pub const fn monster_slain(&mut self) -> bool {
+		if self.monsters.len() > self.current_monster {
+			self.current_monster += 1;
+			false
+		} else {
+			true
 		}
-
-		for reward in self.treasures.clone() {
-			if let Some(weapon) = reward.weapon {
-				println!("You found a weapon!"); //, treasure.weapon.as_ref().unwrap().name);
-				println!(
-					"Your attack: {} -> New attack: {}",
-					player.attack
-						+ player
-							.weapon
-							.as_ref()
-							.unwrap_or(&Weapon::empty())
-							.attack_value,
-					player.attack + weapon.attack_value
-				);
-				println!("Do you want to equip it? (y/N)");
-
-				let mut input = String::new();
-				io::stdin()
-					.read_line(&mut input)
-					.expect("error: unable to read user input");
-
-				match input.trim() {
-					"y" => player.equip(weapon),
-					_ => println!("You decide not to equip the weapon."),
-				}
-			}
-
-			if let Some(health_potion) = reward.health_potion {
-				println!("You found a health potion!");
-				println!(
-					"Your health: {} -> New health: {}",
-					player.health,
-					player.health + health_potion.heal_amount
-				);
-				player.health += health_potion.heal_amount;
-			}
-		}
-
-		RoomResult::Sucess
 	}
 }
 
@@ -237,7 +120,11 @@ pub struct Treasure {
 }
 
 impl Treasure {
-	fn new(weapon: Option<Weapon>, gold: Option<u32>, health_potion: Option<HealthPotion>) -> Self {
+	const fn new(
+		weapon: Option<Weapon>,
+		gold: Option<u32>,
+		health_potion: Option<HealthPotion>,
+	) -> Self {
 		Self {
 			weapon,
 			gold,
@@ -257,36 +144,6 @@ impl Default for Treasure {
 }
 
 #[derive(Debug, Clone)]
-struct HealthPotion {
-	heal_amount: i32,
-}
-
-fn display_fight_screen(player: &Player, monster: &Monster) {
-	println!(" ==============================================");
-	println!("  *--*-              BATTLE              *-*--* ");
-	println!(" ==============================================\n");
-
-	println!(
-		"===== {} =====\t\t\t===== {} =====",
-		player.name, monster.name
-	);
-	println!(
-		" Health: {}\t\t\t Health: {}",
-		player.health, monster.health
-	);
-	println!(
-		" Attack: {}\t\t\t Attack: {}",
-		player.attack
-			+ player
-				.weapon
-				.as_ref()
-				.unwrap_or(&Weapon::empty())
-				.attack_value,
-		monster.attack
-	);
-	println!(
-		" Defense: {}\t\t\t Defense: {}",
-		player.defense, monster.defense
-	);
-	println!(" Speed: {}\t\t\t Speed: {}\n", player.speed, monster.speed);
+pub struct HealthPotion {
+	_heal_amount: i32,
 }

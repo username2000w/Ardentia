@@ -1,14 +1,21 @@
 use std::ops::Index;
 
 use ratatui::{
-	layout::{Constraint, Flex, Layout},
+	layout::{Constraint, Layout},
 	style::Stylize,
-	text::{Line, Text},
-	widgets::{Block, Paragraph, Wrap},
+	text::Line,
 	Frame,
 };
 
-use crate::{app::App, room::TreasureUtils, utils::MainMenuOption};
+use crate::{
+	app::App,
+	room::TreasureUtils,
+	utils::{
+		render_based_on_choice, render_centered, render_centered_bold_text, render_centered_solo,
+		render_left_aligned_text_bold, render_list, render_right_aligned_text_bold, render_title,
+		CombatOption, MainMenuOption,
+	},
+};
 
 #[derive(Debug, PartialEq, Eq, Default)]
 pub enum Screen {
@@ -19,6 +26,7 @@ pub enum Screen {
 	Room,
 	RoomResult,
 	Combat,
+	CombatLoading,
 }
 
 impl Screen {
@@ -33,51 +41,42 @@ impl Screen {
 
 		let [title_area, _, new_game_area, load_game_area, exit_area] = areas.areas(frame.area());
 
-		let title = Line::from("Project X".red().bold()).centered();
+		render_title(frame, "Project X", title_area);
 
-		frame.render_widget(Paragraph::new(title).block(Block::bordered()), title_area);
+		render_based_on_choice(
+			frame,
+			"New Game",
+			new_game_area,
+			&app.current_main_menu_option,
+			&MainMenuOption::NewGame,
+		);
 
-		if app.current_main_menu_option == MainMenuOption::NewGame {
-			frame.render_widget(
-				Line::from("> New Game".red().bold()).centered(),
-				new_game_area,
-			);
-		} else {
-			frame.render_widget(Line::from("New Game".red()).centered(), new_game_area);
-		}
+		render_based_on_choice(
+			frame,
+			"Load Game",
+			load_game_area,
+			&app.current_main_menu_option,
+			&MainMenuOption::LoadGame,
+		);
 
-		if app.current_main_menu_option == MainMenuOption::LoadGame {
-			frame.render_widget(
-				Line::from("> Load Game".red().bold()).centered(),
-				load_game_area,
-			);
-		} else {
-			frame.render_widget(Line::from("Load Game".red()).centered(), load_game_area);
-		}
-
-		if app.current_main_menu_option == MainMenuOption::Quit {
-			frame.render_widget(Line::from("> Quit".red().bold()).centered(), exit_area);
-		} else {
-			frame.render_widget(Line::from("Quit".red()).centered(), exit_area);
-		}
+		render_based_on_choice(
+			frame,
+			"Quit",
+			exit_area,
+			&app.current_main_menu_option,
+			&MainMenuOption::Quit,
+		);
 	}
 
 	pub fn dungeon_loading(frame: &mut Frame, app: &App) {
-		let [text_area] = Layout::vertical([Constraint::Length(1)])
-			.flex(Flex::Center)
-			.areas(frame.area());
-
-		let text = format!("You enter the level {} Dongeon.", app.dungeon.level);
-
-		frame.render_widget(Line::from(text.red()).centered(), text_area);
+		render_centered_solo(
+			frame,
+			format!("You enter the level {} Dongeon.", app.dungeon.level),
+		);
 	}
 
 	pub fn room_loading(frame: &mut Frame) {
-		let [text_area] = Layout::vertical([Constraint::Length(1)])
-			.flex(Flex::Center)
-			.areas(frame.area());
-
-		frame.render_widget(Line::from("You enter a room.".red()).centered(), text_area);
+		render_centered_solo(frame, "You enter a room.");
 	}
 
 	pub fn room(frame: &mut Frame, app: &App) {
@@ -101,19 +100,13 @@ impl Screen {
 		let [title_area, _, description_area, _, difficulty_area, _, monsters_area, _, treasure_area, _, enter_area] =
 			areas.areas(frame.area());
 
-		let title_text = format!("Room : {}", room.name);
-		let title = Line::from(title_text.red().bold()).centered();
+		render_title(frame, format!("Room : {}", room.name), title_area);
 
-		frame.render_widget(
-			Text::from(Line::from(room.description.clone().red().bold()).centered()),
-			description_area,
-		);
+		render_centered_bold_text(frame, room.description.clone(), description_area);
 
-		frame.render_widget(Paragraph::new(title).block(Block::bordered()), title_area);
-
-		let difficulty_text = format!("Difficulty : {}", room.difficulty);
-		frame.render_widget(
-			Line::from(difficulty_text.red().bold()).centered(),
+		render_centered_bold_text(
+			frame,
+			format!("Difficulty : {}", room.difficulty),
 			difficulty_area,
 		);
 
@@ -151,21 +144,128 @@ impl Screen {
 			}
 		}
 
-		frame.render_widget(
-			Paragraph::new(Text::from(monster_list)).wrap(Wrap { trim: true }),
-			monsters_area,
+		render_list(frame, monster_list, monsters_area);
+		render_list(frame, treasure_list, treasure_area);
+		render_centered(frame, "Enter", enter_area);
+	}
+
+	pub fn combat(frame: &mut Frame, app: &App) {
+		let player = &app.player;
+		let room = app.dungeon.rooms.index(app.current_room);
+		let monster = room.monsters.index(room.current_monster);
+
+		let [title_area, combat_area, answer_area] = Layout::vertical([
+			Constraint::Length(3),
+			Constraint::Fill(2),
+			Constraint::Fill(1),
+		])
+		.areas(frame.area());
+		let [player_stats_area, _, monster_stats_area] = Layout::horizontal([
+			Constraint::Percentage(48),
+			Constraint::Percentage(4),
+			Constraint::Percentage(48),
+		])
+		.areas(combat_area);
+		let [player_stats_name_area, player_stats_health_area, player_stats_attack_area, player_stats_defence_area, player_stats_speed_area] =
+			Layout::vertical([
+				Constraint::Length(1),
+				Constraint::Length(1),
+				Constraint::Length(1),
+				Constraint::Length(1),
+				Constraint::Length(1),
+			])
+			.areas(player_stats_area);
+		let [monster_stats_name_area, monster_stats_health_area, monster_stats_attack_area, monster_stats_defence_area, monster_stats_speed_area] =
+			Layout::vertical([
+				Constraint::Length(1),
+				Constraint::Length(1),
+				Constraint::Length(1),
+				Constraint::Length(1),
+				Constraint::Length(1),
+			])
+			.areas(monster_stats_area);
+		let [question_area, attack_button_area, run_button_area] = Layout::vertical([
+			Constraint::Length(1),
+			Constraint::Length(1),
+			Constraint::Length(1),
+		])
+		.areas(answer_area);
+
+		render_title(frame, "BATTLE", title_area);
+
+		// Player
+
+		render_right_aligned_text_bold(frame, player.name.clone(), player_stats_name_area);
+		render_right_aligned_text_bold(
+			frame,
+			format!("Health : {}", player.health),
+			player_stats_health_area,
+		);
+		render_right_aligned_text_bold(
+			frame,
+			format!("Attack : {}", player.attack),
+			player_stats_attack_area,
+		);
+		render_right_aligned_text_bold(
+			frame,
+			format!("Defence : {}", player.defence),
+			player_stats_defence_area,
+		);
+		render_right_aligned_text_bold(
+			frame,
+			format!("Speed : {}", player.speed),
+			player_stats_speed_area,
 		);
 
-		frame.render_widget(
-			Paragraph::new(Text::from(treasure_list)).wrap(Wrap { trim: true }),
-			treasure_area,
+		// Monster
+		render_left_aligned_text_bold(frame, monster.name.clone(), monster_stats_name_area);
+		render_left_aligned_text_bold(
+			frame,
+			format!("Health : {}", monster.health),
+			monster_stats_health_area,
+		);
+		render_left_aligned_text_bold(
+			frame,
+			format!("Attack : {}", monster.attack),
+			monster_stats_attack_area,
+		);
+		render_left_aligned_text_bold(
+			frame,
+			format!("Defence : {}", monster.defence),
+			monster_stats_defence_area,
+		);
+		render_left_aligned_text_bold(
+			frame,
+			format!("Speed : {}", monster.speed),
+			monster_stats_speed_area,
 		);
 
-		frame.render_widget(
-			Paragraph::new(Text::from("Enter").bold().red()).centered(),
-			enter_area,
+		// Question
+		render_centered(frame, "What do you do ?", question_area);
+		render_based_on_choice(
+			frame,
+			"Attack",
+			attack_button_area,
+			&app.current_combat_option,
+			&CombatOption::Attack,
+		);
+		render_based_on_choice(
+			frame,
+			"Run",
+			run_button_area,
+			&app.current_combat_option,
+			&CombatOption::Run,
 		);
 	}
 
-	pub fn combat(frame: &mut Frame, app: &App) {}
+	pub fn combat_loading(frame: &mut Frame, app: &App) {
+		let room = app.dungeon.rooms.index(app.current_room);
+
+		let monster = room.monsters.index(room.current_monster);
+
+		render_centered_solo(
+			frame,
+			format!("A level {} {} appears !", monster.level, monster.name),
+		);
+	}
 }

@@ -1,7 +1,5 @@
 use std::{
-	ops::Index,
-	process::exit,
-	thread::{self, sleep},
+	thread::{self},
 	time::Duration,
 };
 
@@ -10,13 +8,19 @@ use ratatui::{
 	DefaultTerminal, Frame,
 };
 
-use crate::{dungeon::Dungeon, entity::Player, screen::Screen, utils::MainMenuOption};
+use crate::{
+	dungeon::Dungeon,
+	entity::Player,
+	screen::Screen,
+	utils::{CombatOption, MainMenuOption},
+};
 use color_eyre::Result;
 
 #[derive(Debug, Default)]
 pub struct App {
 	pub current_screen: Screen,
 	pub current_main_menu_option: MainMenuOption,
+	pub current_combat_option: CombatOption,
 	pub dungeon: Dungeon,
 	pub player: Player,
 	pub current_room: usize,
@@ -26,14 +30,14 @@ impl App {
 	pub fn run(&mut self, mut terminal: DefaultTerminal) -> Result<()> {
 		loop {
 			terminal.draw(|frame| self.draw(frame))?;
-			if self.current_screen == Screen::RoomLoading {
-				thread::sleep(Duration::from_secs(1));
-				self.switch_screen(Screen::Room);
-				continue;
-			}
-			if self.current_screen == Screen::DungeonLoading {
-				thread::sleep(Duration::from_secs(1));
-				self.switch_screen(Screen::RoomLoading);
+
+			let has_waited_list = [
+				self.wait(&Screen::RoomLoading, 1, Screen::Room),
+				self.wait(&Screen::DungeonLoading, 1, Screen::RoomLoading),
+				self.wait(&Screen::CombatLoading, 1, Screen::Combat),
+			];
+
+			if has_waited_list.contains(&true) {
 				continue;
 			}
 
@@ -46,11 +50,11 @@ impl App {
 					if self.current_screen == Screen::Room {
 						self.handle_room(key);
 					}
-				}
 
-				// Failsafe
-				if key.kind == KeyEventKind::Press && key.code == KeyCode::Esc {
-					break;
+					// Failsafe
+					if key.code == KeyCode::Esc {
+						break;
+					}
 				}
 
 				if is_quitting {
@@ -69,20 +73,7 @@ impl App {
 			Screen::RoomResult => todo!(),
 			Screen::Combat => Screen::combat(frame, self),
 			Screen::Room => Screen::room(frame, self),
-		}
-	}
-
-	pub const fn option_down(&mut self) {
-		match self.current_main_menu_option {
-			MainMenuOption::NewGame => self.current_main_menu_option = MainMenuOption::LoadGame,
-			_ => self.current_main_menu_option = MainMenuOption::Quit,
-		}
-	}
-
-	pub const fn option_up(&mut self) {
-		match self.current_main_menu_option {
-			MainMenuOption::Quit => self.current_main_menu_option = MainMenuOption::LoadGame,
-			_ => self.current_main_menu_option = MainMenuOption::NewGame,
+			Screen::CombatLoading => Screen::combat_loading(frame, self),
 		}
 	}
 
@@ -96,5 +87,15 @@ impl App {
 
 	pub fn create_dungeon(&mut self) {
 		self.dungeon = Dungeon::new(1, 5);
+	}
+
+	fn wait(&mut self, room_to_wait: &Screen, secs: u64, room_to_switch_to: Screen) -> bool {
+		if self.current_screen == *room_to_wait {
+			thread::sleep(Duration::from_secs(secs));
+			self.switch_screen(room_to_switch_to);
+			true
+		} else {
+			false
+		}
 	}
 }

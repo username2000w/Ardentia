@@ -1,7 +1,4 @@
-use crate::{
-	entity::Player,
-	room::{Room, RoomResult},
-};
+use crate::room::Room;
 
 #[derive(Debug, Default)]
 pub struct Dungeon {
@@ -24,19 +21,5 @@ impl Dungeon {
 		}
 
 		Self { rooms, level }
-	}
-
-	pub fn enter(&mut self, player: &mut Player) {
-		println!("You enter the level {} Dongeon.", self.level);
-		for room in &mut self.rooms {
-			match room.enter(player) {
-				RoomResult::Sucess => println!("You killed every monster of this room..."),
-				RoomResult::Died => {
-					println!("You died!");
-					break;
-				}
-				RoomResult::Ran => println!("You ran away!"),
-			}
-		}
 	}
 }

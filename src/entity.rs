@@ -10,7 +10,7 @@ pub struct Player {
 	pub name: String,
 	pub health: i32,
 	pub attack: i32,
-	pub defense: i32,
+	pub defence: i32,
 	pub speed: i32,
 
 	pub weapon: Option<Weapon>,
@@ -118,7 +118,7 @@ impl Player {
 			name: name.into(),
 			health: 100,
 			attack: 10,
-			defense: 5,
+			defence: 5,
 			speed: 5,
 
 			weapon: None,
@@ -143,8 +143,8 @@ impl Player {
 
 	pub fn attack(&self, target: &mut Monster) {
 		let damage = match self.weapon.as_ref() {
-			Some(weapon) => (self.attack + weapon.attack_value) - target.defense,
-			None => self.attack - target.defense,
+			Some(weapon) => (self.attack + weapon.attack_value) - target.defence,
+			None => self.attack - target.defence,
 		};
 
 		let damage: i32 = match damage {
@@ -175,7 +175,7 @@ impl fmt::Display for Player {
 		write!(
 			f,
 			"===== {} =====\nHealth: {}\nAttack: {}\nDefense: {}\nSpeed: {}\n",
-			self.name, self.health, self.attack, self.defense, self.speed
+			self.name, self.health, self.attack, self.defence, self.speed
 		)
 	}
 }
@@ -186,7 +186,7 @@ pub struct Monster {
 	pub level: i32,
 	pub health: i32,
 	pub attack: i32,
-	pub defense: i32,
+	pub defence: i32,
 	pub speed: i32,
 }
 #[derive(Debug)]
@@ -205,7 +205,7 @@ impl Monster {
 				level,
 				health: level * 10,
 				attack: level * 2,
-				defense: level,
+				defence: level,
 				speed: level,
 			},
 			MonsterType::Goblin => Self {
@@ -213,7 +213,7 @@ impl Monster {
 				level,
 				health: level * 20,
 				attack: level * 3,
-				defense: level,
+				defence: level,
 				speed: level * 5,
 			},
 			MonsterType::Ogre => Self {
@@ -221,7 +221,7 @@ impl Monster {
 				level,
 				health: level * 30,
 				attack: level * 4,
-				defense: level * 2,
+				defence: level * 2,
 				speed: level,
 			},
 		}
@@ -244,7 +244,7 @@ impl Monster {
 	}
 
 	pub fn attack(&self, target: &mut Player) {
-		let damage = self.attack - target.defense;
+		let damage = self.attack - target.defence;
 
 		let damage = match damage {
 			x if x < 0 => 1,
@@ -265,7 +265,7 @@ impl fmt::Display for Monster {
 		write!(
 			f,
 			"===== {} =====\nHealth: {}\nAttack: {}\nDefense: {}\nSpeed: {}\n",
-			self.name, self.health, self.attack, self.defense, self.speed
+			self.name, self.health, self.attack, self.defence, self.speed
 		)
 	}
 }
