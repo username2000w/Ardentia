@@ -12,8 +12,8 @@ use crate::{
 	room::TreasureUtils,
 	utils::{
 		render_based_on_choice, render_centered, render_centered_bold_text, render_centered_solo,
-		render_left_aligned_text_bold, render_list, render_right_aligned_text_bold, render_title,
-		CombatOption, MainMenuOption,
+		render_left_aligned_text_bold, render_list, render_list_centered,
+		render_right_aligned_text_bold, render_title, CombatOption, MainMenuOption,
 	},
 };
 
@@ -27,6 +27,8 @@ pub enum Screen {
 	RoomResult,
 	Combat,
 	CombatLoading,
+	DefeatMonster,
+	DeadPlayer,
 }
 
 impl Screen {
@@ -162,7 +164,7 @@ impl Screen {
 		.areas(frame.area());
 		let [player_stats_area, _, monster_stats_area] = Layout::horizontal([
 			Constraint::Percentage(48),
-			Constraint::Percentage(4),
+			Constraint::Length(6),
 			Constraint::Percentage(48),
 		])
 		.areas(combat_area);
@@ -267,5 +269,61 @@ impl Screen {
 			frame,
 			format!("A level {} {} appears !", monster.level, monster.name),
 		);
+	}
+
+	pub fn room_result(frame: &mut Frame, app: &App) {
+		let room = app.dungeon.rooms.index(app.current_room);
+
+		let treasures = room.treasures.clone();
+
+		let mut treasures_text = vec![];
+
+		treasures_text.push(Line::from("Rewards:").red().bold());
+
+		for treasure in treasures {
+			if treasure.weapon.is_some() {
+				treasures_text.push(
+					Line::from(treasure.weapon.unwrap().to_string())
+						.red()
+						.bold(),
+				);
+			}
+			if treasure.health_potion.is_some() {
+				treasures_text.push(
+					Line::from(treasure.health_potion.unwrap().to_string())
+						.red()
+						.bold(),
+				);
+			}
+			if treasure.gold.is_some() {
+				treasures_text.push(
+					Line::from(format!("{} gold", treasure.gold.unwrap()))
+						.red()
+						.bold(),
+				);
+			}
+		}
+
+		#[allow(clippy::cast_possible_truncation)]
+		let [area] = Layout::vertical([Constraint::Length(treasures_text.len() as u16)])
+			.flex(ratatui::layout::Flex::Center)
+			.areas(frame.area());
+
+		render_list_centered(frame, treasures_text, area);
+	}
+
+	pub fn defeat_monster(frame: &mut Frame, app: &App) {
+		let room = app.dungeon.rooms.index(app.current_room);
+
+		let monster = room.monsters.index(room.current_monster);
+
+		render_centered_solo(
+			frame,
+			format!("You defeated a level {} {} !", monster.level, monster.name),
+		);
+	}
+
+	pub fn dead_player(frame: &mut Frame<'_>) {
+		render_centered_solo(frame, "You are dead !");
 	}
 }

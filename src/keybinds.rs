@@ -41,10 +41,33 @@ impl App {
 	}
 
 	pub fn handle_combat(&mut self, key: KeyEvent) {
+		let room = &mut self.dungeon.rooms[self.current_room];
+		let monsters = &mut room.monsters;
+		let monster = &mut monsters[room.current_monster];
+		let player = &mut self.player;
+
 		match key.code {
 			KeyCode::Enter => match self.current_combat_option {
-				CombatOption::Attack => todo!(),
-				CombatOption::Run => todo!(),
+				CombatOption::Attack => {
+					if player.speed > monster.speed {
+						player.attack(monster);
+						if monster.is_alive() {
+							monster.attack(player);
+						}
+					} else {
+						if monster.is_alive() {
+							monster.attack(player);
+						}
+						player.attack(monster);
+					}
+
+					if !monster.is_alive() {
+						self.switch_screen(Screen::DefeatMonster);
+					} else if player.is_dead() {
+						self.switch_screen(Screen::DeadPlayer);
+					}
+				}
+				CombatOption::Run => todo!("Run not implemented yet"),
 			},
 			KeyCode::Up => self.option_up(),
 			KeyCode::Down => self.option_down(),

@@ -1,5 +1,5 @@
 use std::{
-	fmt::{self},
+	fmt::{self, Display},
 	io::{self, Error},
 };
 
@@ -111,6 +111,12 @@ impl Weapon {
 	}
 }
 
+impl Display for Weapon {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "A {} {}", self.rarity, self.weapon_type)
+	}
+}
+
 impl Player {
 	#[must_use]
 	pub fn new<S: Into<String>>(name: S) -> Self {
@@ -141,7 +147,7 @@ impl Player {
 		}
 	}
 
-	pub fn attack(&self, target: &mut Monster) {
+	pub const fn attack(&self, target: &mut Monster) {
 		let damage = match self.weapon.as_ref() {
 			Some(weapon) => (self.attack + weapon.attack_value) - target.defence,
 			None => self.attack - target.defence,
@@ -153,11 +159,6 @@ impl Player {
 		};
 
 		target.health -= damage;
-
-		println!(
-			"{} attacks {} for {} damage",
-			self.name, target.name, damage
-		);
 	}
 
 	#[must_use]
@@ -180,7 +181,7 @@ impl fmt::Display for Player {
 	}
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Monster {
 	pub name: String,
 	pub level: i32,
@@ -235,15 +236,13 @@ impl Monster {
 			_ => Err(Error::other("Monster not found")),
 		}
 	}
-}
 
-impl Monster {
 	#[must_use]
 	pub const fn is_alive(&self) -> bool {
 		self.health > 0
 	}
 
-	pub fn attack(&self, target: &mut Player) {
+	pub const fn attack(&self, target: &mut Player) {
 		let damage = self.attack - target.defence;
 
 		let damage = match damage {
@@ -252,11 +251,6 @@ impl Monster {
 		};
 
 		target.health -= damage;
-
-		println!(
-			"{} attacks {} for {} damage",
-			self.name, target.name, damage
-		);
 	}
 }
 

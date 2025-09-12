@@ -98,6 +98,21 @@ pub fn render_list<'a, S: Into<String> + Into<Text<'a>>>(
 	);
 }
 
+pub fn render_list_centered<'a, S: Into<String> + Into<Text<'a>>>(
+	frame: &mut Frame,
+	list: Vec<S>,
+	area: Rect,
+) where
+	ratatui::prelude::Text<'a>: std::convert::From<std::vec::Vec<S>>,
+{
+	frame.render_widget(
+		Paragraph::new(Text::from(list))
+			.wrap(Wrap { trim: true })
+			.centered(),
+		area,
+	);
+}
+
 pub fn render_right_aligned_text_bold<'a, S: Into<String> + Into<Text<'a>>>(
 	frame: &mut Frame,
 	text: S,

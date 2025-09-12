@@ -1,10 +1,11 @@
 use core::fmt;
+use std::{default, fmt::Display};
 
 use rand::Rng;
 
 use crate::entity::{Monster, Weapon, WeaponType};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Room {
 	pub name: String,
 	pub description: String,
@@ -34,8 +35,9 @@ impl TreasureUtils for Vec<Treasure> {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum Difficulty {
+	#[default]
 	Easy,
 	Medium,
 	Hard,
@@ -145,5 +147,11 @@ impl Default for Treasure {
 
 #[derive(Debug, Clone)]
 pub struct HealthPotion {
-	_heal_amount: i32,
+	heal_amount: i32,
+}
+
+impl Display for HealthPotion {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "A potion that heals {}hp", self.heal_amount)
+	}
 }

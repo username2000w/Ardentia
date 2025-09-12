@@ -35,6 +35,8 @@ impl App {
 				self.wait(&Screen::RoomLoading, 1, Screen::Room),
 				self.wait(&Screen::DungeonLoading, 1, Screen::RoomLoading),
 				self.wait(&Screen::CombatLoading, 1, Screen::Combat),
+				self.wait(&Screen::DefeatMonster, 1, Screen::RoomResult),
+				self.wait(&Screen::DeadPlayer, 5, Screen::MainMenu),
 			];
 
 			if has_waited_list.contains(&true) {
@@ -44,11 +46,11 @@ impl App {
 			if let Event::Key(key) = event::read()? {
 				let mut is_quitting = false;
 				if key.kind == KeyEventKind::Press {
-					if self.current_screen == Screen::MainMenu {
-						is_quitting = self.handle_main_screen(key);
-					}
-					if self.current_screen == Screen::Room {
-						self.handle_room(key);
+					match self.current_screen {
+						Screen::MainMenu => is_quitting = self.handle_main_screen(key),
+						Screen::Room => self.handle_room(key),
+						Screen::Combat => self.handle_combat(key),
+						_ => (),
 					}
 
 					// Failsafe
@@ -70,10 +72,12 @@ impl App {
 			Screen::MainMenu => Screen::main_menu(frame, self),
 			Screen::DungeonLoading => Screen::dungeon_loading(frame, self),
 			Screen::RoomLoading => Screen::room_loading(frame),
-			Screen::RoomResult => todo!(),
+			Screen::RoomResult => Screen::room_result(frame, self),
 			Screen::Combat => Screen::combat(frame, self),
 			Screen::Room => Screen::room(frame, self),
 			Screen::CombatLoading => Screen::combat_loading(frame, self),
+			Screen::DefeatMonster => Screen::defeat_monster(frame, self),
+			Screen::DeadPlayer => Screen::dead_player(frame),
 		}
 	}
 
@@ -90,7 +94,7 @@ impl App {
 	}
 
 	fn wait(&mut self, room_to_wait: &Screen, secs: u64, room_to_switch_to: Screen) -> bool {
-		if self.current_screen == *room_to_wait {
+		if &self.current_screen == room_to_wait {
 			thread::sleep(Duration::from_secs(secs));
 			self.switch_screen(room_to_switch_to);
 			true
