@@ -9,11 +9,12 @@ use ratatui::{
 
 use crate::{
 	app::App,
-	room::TreasureUtils,
+	room::{TreasureUtils, WeaponUtils},
 	utils::{
 		render_based_on_choice, render_centered, render_centered_bold_text, render_centered_solo,
 		render_left_aligned_text_bold, render_list, render_list_centered,
-		render_right_aligned_text_bold, render_title, CombatOption, MainMenuOption,
+		render_right_aligned_text_bold, render_title, ChangeWeaponOption, CombatOption,
+		MainMenuOption,
 	},
 };
 
@@ -82,7 +83,7 @@ impl Screen {
 	}
 
 	pub fn room(frame: &mut Frame, app: &App) {
-		let room = app.dungeon.rooms.index(app.current_room);
+		let room = &app.dungeon.get_current_room_immutable();
 		let monster_number = (room.monsters.len() + 1) as u16;
 		let treasure_number = room.treasures.treasure_len() + 1;
 		let areas = Layout::vertical([
@@ -153,7 +154,7 @@ impl Screen {
 
 	pub fn combat(frame: &mut Frame, app: &App) {
 		let player = &app.player;
-		let room = app.dungeon.rooms.index(app.current_room);
+		let room = &app.dungeon.get_current_room_immutable();
 		let monster = room.monsters.index(room.current_monster);
 
 		let [title_area, combat_area, answer_area] = Layout::vertical([
@@ -261,7 +262,7 @@ impl Screen {
 	}
 
 	pub fn combat_loading(frame: &mut Frame, app: &App) {
-		let room = app.dungeon.rooms.index(app.current_room);
+		let room = &app.dungeon.get_current_room_immutable();
 
 		let monster = room.monsters.index(room.current_monster);
 
@@ -272,15 +273,20 @@ impl Screen {
 	}
 
 	pub fn room_result(frame: &mut Frame, app: &App) {
-		let room = app.dungeon.rooms.index(app.current_room);
+		let room = &app.dungeon.get_current_room_immutable();
 
 		let treasures = room.treasures.clone();
 
 		let mut treasures_text = vec![];
 
+		let [mut rewards_area] = Layout::vertical([Constraint::Percentage(100)])
+			.flex(ratatui::layout::Flex::Center)
+			.areas(frame.area());
+		let change_weapon_area;
+
 		treasures_text.push(Line::from("Rewards:").red().bold());
 
-		for treasure in treasures {
+		for treasure in treasures.clone() {
 			if treasure.weapon.is_some() {
 				treasures_text.push(
 					Line::from(treasure.weapon.unwrap().to_string())
@@ -304,18 +310,57 @@ impl Screen {
 			}
 		}
 
-		#[allow(clippy::cast_possible_truncation)]
-		let [area] = Layout::vertical([Constraint::Length(treasures_text.len() as u16)])
+		if treasures.contains_weapon() {
+			[rewards_area, change_weapon_area] =
+				Layout::vertical([Constraint::Percentage(75), Constraint::Percentage(25)])
+					.flex(ratatui::layout::Flex::Center)
+					.areas(frame.area());
+			let [question_area, yes_area, no_area] = Layout::vertical([
+				Constraint::Length(1),
+				Constraint::Length(1),
+				Constraint::Length(1),
+			])
 			.flex(ratatui::layout::Flex::Center)
-			.areas(frame.area());
+			.areas(change_weapon_area);
+			let player_attack = match &app.player.weapon {
+				Some(weapon) => app.player.attack + weapon.attack_value,
+				None => app.player.attack,
+			};
+			let weapon_attack = app.player.attack + treasures.get_weapon().unwrap().attack_value;
 
-		render_list_centered(frame, treasures_text, area);
+			render_centered(
+				frame,
+				format!("Do you equip the new weapon ? (current : {player_attack}, new : {weapon_attack})"),
+				question_area,
+			);
+			render_based_on_choice(
+				frame,
+				"Yes",
+				yes_area,
+				&app.current_change_weapon_option,
+				&ChangeWeaponOption::Yes,
+			);
+			render_based_on_choice(
+				frame,
+				"No",
+				no_area,
+				&app.current_change_weapon_option,
+				&ChangeWeaponOption::No,
+			);
+		}
+
+		#[allow(clippy::cast_possible_truncation)]
+		let [rewards_area_final] = Layout::vertical([Constraint::Length(treasures_text.len() as u16)])
+			.flex(ratatui::layout::Flex::Center)
+			.areas(rewards_area);
+
+		render_list_centered(frame, treasures_text, rewards_area_final);
 	}
 
 	pub fn defeat_monster(frame: &mut Frame, app: &App) {
-		let room = app.dungeon.rooms.index(app.current_room);
+		let room = &app.dungeon.get_current_room_immutable();
 
-		let monster = room.monsters.index(room.current_monster);
+		let monster = room.monsters.index(room.current_monster - 1);
 
 		render_centered_solo(
 			frame,

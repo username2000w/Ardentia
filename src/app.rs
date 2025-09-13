@@ -12,7 +12,7 @@ use crate::{
 	dungeon::Dungeon,
 	entity::Player,
 	screen::Screen,
-	utils::{CombatOption, MainMenuOption},
+	utils::{ChangeWeaponOption, CombatOption, MainMenuOption},
 };
 use color_eyre::Result;
 
@@ -21,9 +21,9 @@ pub struct App {
 	pub current_screen: Screen,
 	pub current_main_menu_option: MainMenuOption,
 	pub current_combat_option: CombatOption,
+	pub current_change_weapon_option: ChangeWeaponOption,
 	pub dungeon: Dungeon,
 	pub player: Player,
-	pub current_room: usize,
 }
 
 impl App {
@@ -50,6 +50,7 @@ impl App {
 						Screen::MainMenu => is_quitting = self.handle_main_screen(key),
 						Screen::Room => self.handle_room(key),
 						Screen::Combat => self.handle_combat(key),
+						Screen::RoomResult => self.handle_change_weapon(key),
 						_ => (),
 					}
 

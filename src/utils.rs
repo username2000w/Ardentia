@@ -27,6 +27,15 @@ pub enum CombatOption {
 
 impl Choice for CombatOption {}
 
+#[derive(Debug, PartialEq, Eq, Default)]
+pub enum ChangeWeaponOption {
+	#[default]
+	Yes,
+	No,
+}
+
+impl Choice for ChangeWeaponOption {}
+
 pub fn render_title<'a, S: Into<String> + Into<Text<'a>>>(frame: &mut Frame, title: S, area: Rect) {
 	let title: String = title.into();
 	frame.render_widget(

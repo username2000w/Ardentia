@@ -1,11 +1,11 @@
 use core::fmt;
-use std::{default, fmt::Display};
+use std::fmt::Display;
 
 use rand::Rng;
 
 use crate::entity::{Monster, Weapon, WeaponType};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Room {
 	pub name: String,
 	pub description: String,
@@ -35,7 +35,7 @@ impl TreasureUtils for Vec<Treasure> {
 	}
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub enum Difficulty {
 	#[default]
 	Easy,
@@ -104,13 +104,12 @@ impl Room {
 		}
 	}
 
-	pub const fn monster_slain(&mut self) -> bool {
-		if self.monsters.len() > self.current_monster {
-			self.current_monster += 1;
-			false
-		} else {
-			true
-		}
+	pub const fn monster_slain(&mut self) {
+		self.current_monster += 1;
+	}
+
+	pub const fn is_empty(&mut self) -> bool {
+		self.monsters.len() == self.current_monster
 	}
 }
 
@@ -132,6 +131,31 @@ impl Treasure {
 			gold,
 			health_potion,
 		}
+	}
+}
+
+pub trait WeaponUtils {
+	fn get_weapon(&self) -> Option<Weapon>;
+	fn contains_weapon(&self) -> bool;
+}
+
+impl WeaponUtils for Vec<Treasure> {
+	fn get_weapon(&self) -> Option<Weapon> {
+		for treasure in self {
+			if treasure.weapon.is_some() {
+				return treasure.weapon.clone();
+			}
+		}
+		None
+	}
+
+	fn contains_weapon(&self) -> bool {
+		for treasure in self {
+			if treasure.weapon.is_some() {
+				return true;
+			}
+		}
+		false
 	}
 }
 

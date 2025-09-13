@@ -253,13 +253,3 @@ impl Monster {
 		target.health -= damage;
 	}
 }
-
-impl fmt::Display for Monster {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(
-			f,
-			"===== {} =====\nHealth: {}\nAttack: {}\nDefense: {}\nSpeed: {}\n",
-			self.name, self.health, self.attack, self.defence, self.speed
-		)
-	}
-}
