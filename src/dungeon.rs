@@ -1,12 +1,10 @@
-use crate::{
-	entity::Player,
-	room::{Room, RoomResult},
-};
+use crate::room::Room;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Dungeon {
-	rooms: Vec<Room>,
-	level: i32,
+	pub rooms: Vec<Room>,
+	pub level: i32,
+	pub current_room: usize,
 }
 
 impl Dungeon {
@@ -23,20 +21,28 @@ impl Dungeon {
 			));
 		}
 
-		Self { rooms, level }
+		Self {
+			rooms,
+			level,
+			current_room: 0,
+		}
 	}
 
-	pub fn enter(&mut self, player: &mut Player) {
-		println!("You enter the level {} Dongeon.", self.level);
-		for room in &mut self.rooms {
-			match room.enter(player) {
-				RoomResult::Sucess => println!("You killed every monster of this room..."),
-				RoomResult::Died => {
-					println!("You died!");
-					break;
-				}
-				RoomResult::Ran => println!("You ran away!"),
-			}
+	pub const fn is_there_rooms_left(&mut self) -> bool {
+		self.rooms.len() != self.current_room + 1
+	}
+
+	pub const fn next_room(&mut self) {
+		if self.rooms.len() - 1 > self.current_room {
+			self.current_room += 1;
 		}
+	}
+
+	pub fn get_current_room_mutable(&mut self) -> &mut Room {
+		&mut self.rooms[self.current_room]
+	}
+
+	pub fn get_current_room_immutable(&self) -> Room {
+		self.rooms[self.current_room].clone()
 	}
 }
