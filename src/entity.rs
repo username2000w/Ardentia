@@ -122,10 +122,10 @@ impl Player {
 	pub fn new<S: Into<String>>(name: S) -> Self {
 		Self {
 			name: name.into(),
-			health: 100,
-			attack: 10,
-			defence: 5,
-			speed: 5,
+			health: 10,
+			attack: 1,
+			defence: 0,
+			speed: 1,
 
 			weapon: None,
 		}
@@ -190,7 +190,7 @@ pub struct Monster {
 	pub defence: i32,
 	pub speed: i32,
 }
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum MonsterType {
 	Slime,
 	Goblin,
@@ -199,31 +199,31 @@ pub enum MonsterType {
 
 impl Monster {
 	#[must_use]
-	fn new(monster_type: &MonsterType, level: i32) -> Self {
+	pub fn new(monster_type: &MonsterType, level: i32) -> Self {
 		match monster_type {
 			MonsterType::Slime => Self {
 				name: String::from("Slime"),
 				level,
-				health: level * 10,
-				attack: level * 2,
-				defence: level,
+				health: 4 + level * 1,
+				attack: level,
+				defence: 0,
 				speed: level,
 			},
 			MonsterType::Goblin => Self {
 				name: String::from("Goblin"),
 				level,
-				health: level * 20,
-				attack: level * 3,
-				defence: level,
-				speed: level * 5,
+				health: 8 + level * 2,
+				attack: 2 + level,
+				defence: level / 2,
+				speed: 3 + level * 2,
 			},
 			MonsterType::Ogre => Self {
 				name: String::from("Ogre"),
 				level,
-				health: level * 30,
-				attack: level * 4,
-				defence: level * 2,
-				speed: level,
+				health: 15 + level * 3,
+				attack: 3 + level * 2,
+				defence: 1 + level,
+				speed: level / 2,
 			},
 		}
 	}

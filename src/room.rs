@@ -3,7 +3,7 @@ use std::fmt::Display;
 
 use rand::Rng;
 
-use crate::entity::{Monster, Weapon, WeaponType};
+use crate::entity::{Monster, MonsterType, Weapon, WeaponType};
 
 #[derive(Debug, Default, Clone)]
 pub struct Room {
@@ -62,31 +62,39 @@ pub enum RoomResult {
 
 impl Room {
 	#[must_use]
-	pub fn new(name: String, description: String, threat: i32) -> Self {
-		let mut actual_threat = threat;
+	pub fn new(name: String, description: String, room_level: i32) -> Self {
 		let mut monsters: Vec<Monster> = Vec::new();
 
-		while actual_threat > 0 {
-			let num = rand::rng().random_range(
-				1..(if actual_threat > 3 {
-					actual_threat
-				} else {
-					actual_threat + 2
-				}),
-			);
-			let monster = Monster::monster_based_on_threat(num);
-
-			if let Ok(m) = monster {
-				monsters.push(m);
-				actual_threat -= num;
-			}
+		let num_monsters = match room_level {
+			1 => rand::random_range(1..=2),     // Niveau 1 : 1-2 monstres
+			2 => rand::random_range(1..=3),     // Niveau 2 : 1-3 monstres
+			3 => rand::random_range(2..=3),     // Niveau 3 : 2-3 monstres
+			4 => rand::random_range(2..=4),     // Niveau 4 : 2-4 monstres
+			_ => rand::random_range(3..=5),     // Niveau 5+ : 3-5 monstres
+		};
+		
+		let available_monsters = match room_level {
+			1 => vec![MonsterType::Slime],
+			2 => vec![MonsterType::Slime, MonsterType::Goblin],
+			_ => vec![MonsterType::Slime, MonsterType::Goblin, MonsterType::Ogre],
+		};
+		
+		for _ in 0..num_monsters {
+			let monster_type = available_monsters[rand::random_range(0..available_monsters.len())];
+			
+			let base_level = room_level as u32;
+			let level_variation = match room_level {
+				1 => 0,    							// Niveau 1 : pas de variation
+				2..=3 => rand::random_range(0..=1),	// Niveau 2-3 : ±1 niveau
+				_ => rand::random_range(0..=2),		// Niveau 4+ : ±2 niveaux
+			};
+			
+			let monster_level = (base_level as i32 + level_variation - 1).max(1);
+			
+			monsters.push(Monster::new(&monster_type, monster_level));
 		}
 
-		let difficulty = match actual_threat {
-			x if x < 0 => Difficulty::Medium,
-			x if x < -3 => Difficulty::Hard,
-			_ => Difficulty::Easy,
-		};
+		let difficulty = Difficulty::Easy;
 
 		let treasures = vec![Treasure::new(
 			Some(Weapon::new(WeaponType::Sword)),

@@ -9,21 +9,26 @@ pub struct Dungeon {
 
 impl Dungeon {
 	#[must_use]
-	pub fn new(level: i32, num_rooms: i32) -> Self {
-		let threat = 2 + ((level - 1) * 7);
-
+	pub fn new(dungeon_level: i32, num_rooms: i32) -> Self {
 		let mut rooms = Vec::new();
-		for _ in 0..num_rooms {
+		
+		for i in 0..num_rooms {
+			let room_level = if i == num_rooms - 1 {
+				dungeon_level + 1
+			} else {
+				dungeon_level
+			};
+
 			rooms.push(Room::new(
-				String::from("Room"),
-				String::from("A room."),
-				threat,
+				format!("Room {}", i + 1),
+				format!("Level {}", room_level),
+				room_level,
 			));
 		}
 
 		Self {
 			rooms,
-			level,
+			level: dungeon_level,
 			current_room: 0,
 		}
 	}
