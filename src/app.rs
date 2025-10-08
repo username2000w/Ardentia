@@ -37,6 +37,7 @@ impl App {
 				self.wait(&Screen::CombatLoading, 1, Screen::Combat),
 				self.wait(&Screen::DefeatMonster, 1, Screen::RoomResult),
 				self.wait(&Screen::DeadPlayer, 5, Screen::MainMenu),
+				self.wait(&Screen::RunScreen, 1, Screen::MainMenu),
 			];
 
 			if has_waited_list.contains(&true) {
@@ -79,6 +80,7 @@ impl App {
 			Screen::CombatLoading => Screen::combat_loading(frame, self),
 			Screen::DefeatMonster => Screen::defeat_monster(frame, self),
 			Screen::DeadPlayer => Screen::dead_player(frame),
+			Screen::RunScreen => Screen::run_screen(frame),
 		}
 	}
 

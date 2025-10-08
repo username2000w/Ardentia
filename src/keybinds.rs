@@ -69,7 +69,7 @@ impl App {
 						self.switch_screen(Screen::DeadPlayer);
 					}
 				}
-				CombatOption::Run => todo!("Run not implemented yet"),
+				CombatOption::Run => self.switch_screen(Screen::RunScreen),
 			},
 			KeyCode::Up => self.option_up(),
 			KeyCode::Down => self.option_down(),

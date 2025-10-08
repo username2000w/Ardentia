@@ -30,6 +30,7 @@ pub enum Screen {
 	CombatLoading,
 	DefeatMonster,
 	DeadPlayer,
+	RunScreen
 }
 
 impl Screen {
@@ -370,5 +371,9 @@ impl Screen {
 
 	pub fn dead_player(frame: &mut Frame<'_>) {
 		render_centered_solo(frame, "You are dead !");
+	}
+
+	pub fn run_screen(frame: &mut Frame) {
+		render_centered_solo(frame, "You ran away... from the dungeon...");
 	}
 }
