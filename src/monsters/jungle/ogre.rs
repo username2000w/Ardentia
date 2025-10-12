@@ -1,32 +1,35 @@
-use crate::monsters::{Monster, MonsterStats};
+use crate::{
+    entity::Player,
+    monsters::{Monster, MonsterStats},
+};
 
 #[derive(Debug)]
-pub struct Slime {
+pub struct Ogre {
     stats: MonsterStats,
 }
 
-impl Slime {
+impl Ogre {
     #[must_use]
     pub fn new(level: i32) -> Self {
         Self {
             stats: MonsterStats {
-                name: String::from("Slime"),
+                name: String::from("Ogre"),
                 level,
-                health: 4 + level,
-                attack: level,
-                defence: 0,
-                speed: level,
+                health: 15 + level * 3,
+                attack: 3 + level * 2,
+                defence: 1 + level,
+                speed: level / 2,
             },
         }
     }
 }
 
-impl Monster for Slime {
+impl Monster for Ogre {
     fn is_alive(&self) -> bool {
         self.stats.health > 0
     }
 
-    fn attack(&self, target: &mut crate::entity::Player) {
+    fn attack(&self, target: &mut Player) {
         let damage = self.stats.attack - target.defence;
 
         let damage = match damage {

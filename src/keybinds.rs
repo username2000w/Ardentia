@@ -1,5 +1,3 @@
-use std::ops::Index;
-
 use ratatui::crossterm::event::{KeyCode, KeyEvent};
 
 use crate::{
@@ -30,14 +28,7 @@ impl App {
     }
 
     pub fn handle_room(&mut self, key: KeyEvent) {
-        if key.code == KeyCode::Enter
-            && !self
-                .dungeon
-                .rooms
-                .index(self.dungeon.current_room)
-                .monsters
-                .is_empty()
-        {
+        if key.code == KeyCode::Enter && !self.dungeon.current_room.monsters.is_empty() {
             self.switch_screen(Screen::CombatLoading);
         }
     }

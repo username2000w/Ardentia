@@ -10,6 +10,7 @@ use crate::monsters::Monster;
 #[derive(Debug, Default)]
 pub struct Player {
     pub name: String,
+    pub max_health: i32,
     pub health: i32,
     pub attack: i32,
     pub defence: i32,
@@ -124,6 +125,7 @@ impl Player {
     pub fn new<S: Into<String>>(name: S) -> Self {
         Self {
             name: name.into(),
+            max_health: 10,
             health: 10,
             attack: 1,
             defence: 0,
@@ -164,6 +166,17 @@ impl Player {
         };
 
         target.take_damage(damage);
+    }
+
+    #[must_use]
+    pub fn get_attack(&self) -> i32 {
+        let mut attack_value = self.attack;
+
+        if let Some(x) = self.weapon.clone() {
+            attack_value += x.attack_value;
+        }
+
+        attack_value
     }
 
     #[must_use]

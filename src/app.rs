@@ -13,6 +13,7 @@ use crate::{
     entity::Player,
     screen::Screen,
     utils::{ChangeWeaponOption, CombatOption, MainMenuOption},
+    zone::zone::Zone,
 };
 use color_eyre::Result;
 
@@ -23,8 +24,9 @@ pub struct App {
     pub current_main_menu_option: MainMenuOption,
     pub current_combat_option: CombatOption,
     pub current_change_weapon_option: ChangeWeaponOption,
-    pub dungeon: Dungeon,
+
     pub player: Player,
+    pub dungeon: Dungeon,
 }
 
 impl App {
@@ -93,8 +95,15 @@ impl App {
         self.player = Player::new("You");
     }
 
+    #[allow(clippy::missing_panics_doc)]
     pub fn create_dungeon(&mut self) {
-        self.dungeon = Dungeon::new(1, 5);
+        let zone = Zone::get_available_zones()
+            .first()
+            .expect("Zone list should not be empty")
+            .clone();
+
+        self.dungeon = Dungeon::new(zone);
+        self.dungeon.start();
     }
 
     fn wait(&mut self, room_to_wait: &Screen, secs: u64, room_to_switch_to: Screen) -> bool {

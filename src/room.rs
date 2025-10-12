@@ -5,17 +5,26 @@ use rand::Rng;
 
 use crate::{
     entity::{Weapon, WeaponType},
-    monsters::{slime::Slime, Monster},
+    monsters::{jungle::slime::Slime, Monster},
+    zone::zone::Zone,
 };
 
-#[allow(missing_debug_implementations)]
-#[derive(Default)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RoomType {
+    Entrance, // Salle d'entrée - moins de monstres
+    Normal,   // Salle normale - combats standards
+    Elite,    // Salle d'élite - monstres plus forts
+    Treasure, // Salle de trésor - peu de monstres mais bon loot
+    Boss,     // Salle de boss - combat unique contre le boss
+}
+
 pub struct Room {
-    pub name: String,
-    pub description: String,
-    pub difficulty: Difficulty,
+    pub room_number: i32,
+    pub zone: Zone,
+    pub room_type: RoomType,
     pub monsters: Vec<Box<dyn Monster>>,
     pub treasures: Vec<Treasure>,
+    pub is_cleared: bool,
     pub current_monster: usize,
 }
 
@@ -66,57 +75,19 @@ pub enum RoomResult {
 
 impl Room {
     #[must_use]
-    pub fn new(name: String, description: String, room_level: i32) -> Self {
-        let mut monsters: Vec<Box<dyn Monster>> = Vec::new();
-
-        let num_monsters = match room_level {
-            1 => rand::random_range(1..=2), // Niveau 1 : 1-2 monstres
-            2 => rand::random_range(1..=3), // Niveau 2 : 1-3 monstres
-            3 => rand::random_range(2..=3), // Niveau 3 : 2-3 monstres
-            4 => rand::random_range(2..=4), // Niveau 4 : 2-4 monstres
-            _ => rand::random_range(3..=5), // Niveau 5+ : 3-5 monstres
-        };
-
-        let available_monsters = match room_level {
-            1 => vec!["Slime"],
-            2 => vec!["Slime", "Goblin"],
-            _ => vec!["Slime", "Goblin", "Ogre"],
-        };
-
-        for _ in 0..num_monsters {
-            let monster_type = available_monsters[rand::random_range(0..available_monsters.len())];
-
-            let base_level = room_level;
-            let level_variation = match room_level {
-                1 => 0,                             // Niveau 1 : pas de variation
-                2..=3 => rand::random_range(0..=1), // Niveau 2-3 : ±1 niveau
-                _ => rand::random_range(0..=2),     // Niveau 4+ : ±2 niveaux
-            };
-
-            let monster_level = (base_level + level_variation - 1).max(1);
-
-            #[allow(clippy::match_same_arms)]
-            match monster_type {
-                "Slime" => monsters.push(Box::new(Slime::new(monster_level))),
-                "Goblin" => monsters.push(Box::new(Slime::new(monster_level))),
-                _ => monsters.push(Box::new(Slime::new(monster_level))),
-            }
-        }
-
-        let difficulty = Difficulty::Easy;
-
-        let treasures = vec![Treasure::new(
-            Some(Weapon::new(WeaponType::Sword)),
-            Some(rand::random_range(0..50)),
-            None,
-        )];
-
+    pub fn new(
+        room_number: i32,
+        zone: Zone,
+        room_type: RoomType,
+        monsters: Vec<Box<dyn Monster>>,
+    ) -> Self {
         Self {
-            name,
-            description,
-            difficulty,
+            room_number,
+            zone,
+            room_type,
             monsters,
-            treasures,
+            treasures: vec![Treasure::default()],
+            is_cleared: false,
             current_monster: 0,
         }
     }
@@ -127,6 +98,20 @@ impl Room {
 
     pub const fn is_empty(&mut self) -> bool {
         self.monsters.len() == self.current_monster
+    }
+}
+
+impl Default for Room {
+    fn default() -> Self {
+        Self {
+            room_number: 1,
+            zone: Zone::default(),
+            room_type: RoomType::Entrance,
+            monsters: vec![Box::new(Slime::new(1))],
+            treasures: vec![Treasure::default()],
+            is_cleared: true,
+            current_monster: 0,
+        }
     }
 }
 

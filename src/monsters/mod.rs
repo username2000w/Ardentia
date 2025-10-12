@@ -1,4 +1,7 @@
-use crate::entity::Player;
+use crate::{
+    entity::Player,
+    monsters::jungle::{goblin::Goblin, ogre::Ogre, slime::Slime},
+};
 
 pub trait Monster {
     fn is_alive(&self) -> bool;
@@ -17,4 +20,16 @@ pub struct MonsterStats {
     pub speed: i32,
 }
 
-pub mod slime;
+pub mod balancer;
+pub mod jungle;
+
+#[must_use]
+pub fn create_monster(name: &str, level: i32) -> Option<Box<dyn Monster>> {
+    match name {
+        "Slime" => Some(Box::new(Slime::new(level))),
+        "Goblin" => Some(Box::new(Goblin::new(level))),
+        "Ogre" => Some(Box::new(Ogre::new(level))),
+
+        _ => None,
+    }
+}

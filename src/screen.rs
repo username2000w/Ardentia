@@ -75,7 +75,10 @@ impl Screen {
     pub fn dungeon_loading(frame: &mut Frame, app: &App) {
         render_centered_solo(
             frame,
-            format!("You enter the level {} Dongeon.", app.dungeon.level),
+            format!(
+                "You enter the {} level.",
+                app.dungeon.current_zone.zone_type
+            ),
         );
     }
 
@@ -84,7 +87,7 @@ impl Screen {
     }
 
     pub fn room(frame: &mut Frame, app: &App) {
-        let room = &app.dungeon.get_current_room_immutable();
+        let room = &app.dungeon.generate_current_room();
         #[allow(clippy::cast_possible_truncation)]
         let monster_number = (room.monsters.len() + 1) as u16;
         let treasure_number = room.treasures.treasure_len() + 1;
@@ -105,13 +108,24 @@ impl Screen {
         let [title_area, _, description_area, _, difficulty_area, _, monsters_area, _, treasure_area, _, enter_area] =
             areas.areas(frame.area());
 
-        render_title(frame, format!("Room : {}", room.name), title_area);
-
-        render_centered_bold_text(frame, room.description.clone(), description_area);
+        render_title(
+            frame,
+            format!(
+                "{} : room {}",
+                &app.dungeon.current_zone.zone_type, &app.dungeon.current_room_number
+            ),
+            title_area,
+        );
 
         render_centered_bold_text(
             frame,
-            format!("Difficulty : {}", room.difficulty),
+            format!(" {} ", &app.dungeon.current_zone.description),
+            description_area,
+        );
+
+        render_centered_bold_text(
+            frame,
+            format!("Difficulty : {}", &app.dungeon.current_zone.difficulty),
             difficulty_area,
         );
 
@@ -215,7 +229,7 @@ impl Screen {
         );
         render_right_aligned_text_bold(
             frame,
-            format!("Attack : {}", player.attack),
+            format!("Attack : {}", player.get_attack()),
             player_stats_attack_area,
         );
         render_right_aligned_text_bold(
