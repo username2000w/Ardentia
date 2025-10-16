@@ -13,7 +13,7 @@ use crate::{
     entity::Player,
     screen::Screen,
     utils::{ChangeWeaponOption, CombatOption, MainMenuOption},
-    zone::zone::Zone,
+    zones::zone::Zone,
 };
 use color_eyre::Result;
 

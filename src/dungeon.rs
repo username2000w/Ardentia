@@ -1,9 +1,9 @@
 use crate::{
     room::Room,
-    zone::{generator::RoomGenerator, zone::Zone},
+    zones::{generator::RoomGenerator, zone::Zone},
 };
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Dungeon {
     pub current_zone: Zone,
     pub current_room_number: i32,
@@ -11,6 +11,8 @@ pub struct Dungeon {
     pub is_active: bool,
     pub current_room: Room,
 }
+
+const MAX_MONSTER_NUMBER: i32 = 10;
 
 impl Dungeon {
     #[must_use]
@@ -53,7 +55,7 @@ impl Dungeon {
     }
 
     pub const fn is_there_rooms_left(&mut self) -> bool {
-        self.current_room_number < 10
+        self.current_room_number < MAX_MONSTER_NUMBER
     }
 
     pub const fn get_current_room_mutable(&mut self) -> &mut Room {

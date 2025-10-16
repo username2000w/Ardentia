@@ -6,4 +6,4 @@ pub mod monsters;
 pub mod room;
 pub mod screen;
 pub mod utils;
-pub mod zone;
+pub mod zones;

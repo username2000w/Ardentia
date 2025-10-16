@@ -45,7 +45,7 @@ impl Screen {
 
         let [title_area, _, new_game_area, load_game_area, exit_area] = areas.areas(frame.area());
 
-        render_title(frame, "Project X", title_area);
+        render_title(frame, "Ardentia", title_area);
 
         render_based_on_choice(
             frame,
@@ -87,7 +87,7 @@ impl Screen {
     }
 
     pub fn room(frame: &mut Frame, app: &App) {
-        let room = &app.dungeon.generate_current_room();
+        let room = &app.dungeon.current_room;
         #[allow(clippy::cast_possible_truncation)]
         let monster_number = (room.monsters.len() + 1) as u16;
         let treasure_number = room.treasures.treasure_len() + 1;

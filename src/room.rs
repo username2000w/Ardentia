@@ -1,12 +1,12 @@
 use core::fmt;
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
 use rand::Rng;
 
 use crate::{
     entity::{Weapon, WeaponType},
     monsters::{jungle::slime::Slime, Monster},
-    zone::zone::Zone,
+    zones::zone::Zone,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -18,6 +18,7 @@ pub enum RoomType {
     Boss,     // Salle de boss - combat unique contre le boss
 }
 
+#[derive(Debug)]
 pub struct Room {
     pub room_number: i32,
     pub zone: Zone,
@@ -136,6 +137,16 @@ impl Treasure {
     }
 }
 
+impl Default for Treasure {
+    fn default() -> Self {
+        Self::new(
+            Some(Weapon::new(WeaponType::Sword)),
+            Some(rand::rng().random_range(10..50)),
+            None
+        )
+    }
+}
+
 pub trait WeaponUtils {
     fn get_weapon(&self) -> Option<Weapon>;
     fn contains_weapon(&self) -> bool;
@@ -158,16 +169,6 @@ impl WeaponUtils for Vec<Treasure> {
             }
         }
         false
-    }
-}
-
-impl Default for Treasure {
-    fn default() -> Self {
-        Self {
-            weapon: Some(Weapon::new(WeaponType::Sword)),
-            gold: Some(rand::rng().random_range(10..50)),
-            health_potion: None,
-        }
     }
 }
 

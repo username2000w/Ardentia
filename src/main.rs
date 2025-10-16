@@ -1,5 +1,5 @@
 use color_eyre::{eyre::Ok, Result};
-use project_x::app::App;
+use ardentia::app::App;
 
 fn main() -> Result<()> {
     color_eyre::install()?;

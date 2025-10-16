@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-#[derive(Default, Debug, Clone, PartialEq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub enum ZoneDifficulty {
     #[default]
     Normal,
@@ -9,7 +9,7 @@ pub enum ZoneDifficulty {
 impl Display for ZoneDifficulty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ZoneDifficulty::Normal => write!(f, "Normal"),
+            &Self::Normal => write!(f, "Normal"),
         }
     }
 }
@@ -23,7 +23,7 @@ pub enum ZoneType {
 impl Display for ZoneType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ZoneType::Jungle => write!(f, "Jungle"),
+            &Self::Jungle => write!(f, "Jungle"),
         }
     }
 }
@@ -40,6 +40,7 @@ pub struct Zone {
 }
 
 impl Zone {
+    #[must_use]
     pub fn new(zone_type: ZoneType, difficulty: ZoneDifficulty) -> Self {
         let (name, description, recommended_level, unique_monsters, boss_name) = match zone_type {
             ZoneType::Jungle => Self::jungle_data(&difficulty),
@@ -59,26 +60,28 @@ impl Zone {
     fn jungle_data(difficulty: &ZoneDifficulty) -> (String, String, i32, Vec<String>, String) {
         match difficulty {
             ZoneDifficulty::Normal => (
-                "Jungle Profonde".to_string(),
-                "Cœur dangereux de la jungle".to_string(),
+                "Jungle".to_string(),
+                "Dangerous heart of the jungle".to_string(),
                 1,
                 vec![
                     "Slime".to_string(),
                     "Goblin".to_string(),
                     "Ogre".to_string(),
                 ],
-                "Araignée Géante".to_string(),
+                "Giant Spider".to_string(),
             ),
         }
     }
 
-    pub fn get_monster_level_range(&self) -> (i32, i32) {
+    #[must_use]
+    pub const fn get_monster_level_range(&self) -> (i32, i32) {
         match self.difficulty {
-            ZoneDifficulty::Normal => (1, 5),
+            ZoneDifficulty::Normal => (1, 4),
         }
     }
 
-    pub fn get_available_zones() -> Vec<Zone> {
-        vec![Zone::new(ZoneType::Jungle, ZoneDifficulty::Normal)]
+    #[must_use]
+    pub fn get_available_zones() -> Vec<Self> {
+        vec![Self::new(ZoneType::Jungle, ZoneDifficulty::Normal)]
     }
 }
